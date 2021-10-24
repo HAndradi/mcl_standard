@@ -212,6 +212,9 @@ include_directories(
 add_executable(normal_estimation_node src/normal_estimation/normal_estimation_node.cpp src/normal_estimation/normal_estimation.cpp) 
 target_link_libraries(normal_estimation_node ${catkin_LIBRARIES}) 
 
+add_executable(odom_broadcaster_node src/odom_broadcaster/odom_broadcaster_node.cpp) 
+target_link_libraries(odom_broadcaster_node ${catkin_LIBRARIES}) 
+
 add_executable(mcl_standard_node src/mcl_standard_node.cpp src/pf_standard.cpp src/motion_model.cpp src/observation_model.cpp src/particle.cpp) 
 target_link_libraries(mcl_standard_node ${catkin_LIBRARIES}) 
 
