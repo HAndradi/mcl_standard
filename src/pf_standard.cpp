@@ -22,10 +22,10 @@ Eigen::Vector3f sampleZeroMean3DGaussian(Eigen::Matrix3f cov, std::default_rando
     return sample; 
 }
 
-ParticleFilter::ParticleFilter(int num_particles, PointCloudNormal::Ptr map_cloud) {
+ParticleFilter::ParticleFilter(int num_particles, PointCloudNormal::Ptr map_cloud, float obs_alpha) {
     num_particles_ = num_particles;
     motion_model_ = new MotionModel(); 
-    observation_model_ = new ObservationModel(map_cloud, 300, 0.02, 0.3, 0.2); 
+    observation_model_ = new ObservationModel(map_cloud, 300, 0.02, 0.3, 0.2, obs_alpha); 
     initializeParticles(Eigen::Vector3f(0, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
 }
 
@@ -70,7 +70,7 @@ void ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
     float max_particle_log_likelihood = *std::max_element(particle_log_likelihoods.begin(), particle_log_likelihoods.end());
     float weight_sum = 0.0;
     for (size_t i=0; i < particle_log_likelihoods.size(); i++) {
-        //particles_[i].setWeight(exp((particle_log_likelihoods[i] - max_particle_log_likelihood)/100000));
+        //particles_[i].setWeight(exp((particle_log_likelihoods[i] - max_particle_log_likelihood)/10000));
         particles_[i].setWeight(exp(particle_log_likelihoods[i] - max_particle_log_likelihood));
         weight_sum += particles_[i].getWeight();
     }

@@ -102,9 +102,12 @@ int main (int argc, char** argv) {
         return -1;
     }
     
-    int num_particles; 
+    int num_particles;
+    float obs_alpha; 
     nh.param("num_particles", num_particles, 3);
-    ParticleFilter pf_standard(num_particles, map_cloud);
+    nh.param("obs_alpha", obs_alpha, 0.0f);
+    std::cout << "obs_alpha: " << obs_alpha << std::endl;
+    ParticleFilter pf_standard(num_particles, map_cloud, obs_alpha);
  
     ros::Subscriber init_pose_sub = nh.subscribe<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 1, boost::bind(initPoseCb, _1, boost::ref(pf_standard)));
     ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/odom", 10, boost::bind(odomCb, _1, boost::ref(pf_standard)));    

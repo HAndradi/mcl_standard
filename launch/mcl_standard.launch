@@ -5,6 +5,7 @@
     <arg name="map" value="$(optenv MAP lego_loam_normals_map)"/>
     <arg name="map_pcd" default="$(find mcl_standard)/maps/$(arg map).pcd"/>
     <arg name="num_particles" default="3" />
+    <arg name="obs_alpha" default="0.0" />
     
     <group if="$(arg offline)">
         <param name="/use_sim_time" value="true" />
@@ -20,6 +21,7 @@
 
     <node pkg="mcl_standard" type="mcl_standard_node"    name="mcl_standard_node"    output="screen">
         <param name="num_particles" value="$(arg num_particles)" />
+        <param name="obs_alpha" value="$(arg obs_alpha)" />
     </node>
 
     <node pkg="mcl_standard" type="normal_estimation_node" name="normal_estimation_node" output="screen">

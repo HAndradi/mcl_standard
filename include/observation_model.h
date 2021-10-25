@@ -18,7 +18,7 @@ struct Correspondence {
 
 class ObservationModel {
     public:
-        ObservationModel(PointCloudNormal::Ptr map_cloud, int num_observations, float observation_std_dev, float max_nn_dist, float max_nn_normal_ang_diff);
+        ObservationModel(PointCloudNormal::Ptr map_cloud, int num_observations, float observation_std_dev, float max_nn_dist, float max_nn_normal_ang_diff, float obs_alpha);
         void setInputCloud(PointCloudNormal::Ptr cloud);
         float getLogLikelihood(Particle &particle);
     private:
@@ -26,6 +26,7 @@ class ObservationModel {
         float observation_std_dev_;
         float max_nn_sqr_dist_;
         float min_cos_nn_normal_angle_diff_;
+        double obs_alpha_;
         OctreeNormal map_octree_;
         PointCloudNormal::Ptr input_cloud_;
         PointCloudNormal::Ptr map_cloud_;
