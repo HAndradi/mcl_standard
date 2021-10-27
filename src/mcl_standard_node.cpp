@@ -50,7 +50,7 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
         tf_listener_ptr->lookupTransform("/odom", "/base_footprint", ros::Time(0), odom_basefootprint_transform);
         tf_listener_ptr->lookupTransform("/base_footprint", cloud_msg->header.frame_id, ros::Time(0), basefootprint_lidar_transform);
         PointCloudNormal::Ptr transformed_cloud (new PointCloudNormal ());
-        pcl_ros::transformPointCloud (*cloud, *transformed_cloud, basefootprint_lidar_transform);
+        pcl_ros::transformPointCloudWithNormals (*cloud, *transformed_cloud, basefootprint_lidar_transform);
 
         pf_standard.filter(transformed_cloud);
         std::vector<Particle> particles = pf_standard.getParticleSet();
