@@ -2,6 +2,7 @@
 #include <pcl/common/transforms.h>
 #include <Eigen/SVD>
 #include <cmath>
+#include <algorithm>
 
 ObservationModel::ObservationModel(PointCloudNormal::Ptr map_cloud, int num_observations, float observation_std_dev, float max_nn_dist
                                    , float max_nn_normal_ang_diff, float obs_alpha): map_octree_(0.03) {
@@ -22,7 +23,12 @@ void ObservationModel::setInputCloud(PointCloudNormal::Ptr cloud) {
             input_cloud_->points.push_back(cloud->points[i]);
         }
     }
-    std::cout << "Number of valid points: " << input_cloud_->points.size() << std::endl;
+    if (input_cloud_->points.size() > num_observations_) {
+        std::random_shuffle(input_cloud_->points.begin(), input_cloud_->points.end());
+        input_cloud_->points.resize(num_observations_);
+    } else {
+        std::cout << "Insufficient number of scan points" << std::endl;
+    }
 }
 
 float ObservationModel::getLogLikelihood(Particle &particle) {
