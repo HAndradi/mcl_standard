@@ -209,9 +209,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(normal_estimation_node src/normal_estimation/normal_estimation_node.cpp src/normal_estimation/normal_estimation.cpp) 
-target_link_libraries(normal_estimation_node ${catkin_LIBRARIES}) 
-
 add_executable(odom_broadcaster_node src/odom_broadcaster/odom_broadcaster_node.cpp) 
 target_link_libraries(odom_broadcaster_node ${catkin_LIBRARIES}) 
 

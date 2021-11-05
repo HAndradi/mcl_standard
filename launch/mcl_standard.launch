@@ -24,7 +24,8 @@
         <param name="obs_alpha" value="$(arg obs_alpha)" />
     </node>
 
-    <node pkg="mcl_standard" type="normal_estimation_node" name="normal_estimation_node" output="screen">
+    <node pkg="normal_estimation" type="approx_normal_estimation_node" name="normal_estimation_node" output="screen">
+        <remap from="lidar_points" to="rslidar_points" />
         <param name="max_row_nn_dist" value="0.07" />
         <param name="max_nn_minor_axis_var" value="0.00005" />
         <param name="min_nn_major_axes_var" value="0.0009" />
