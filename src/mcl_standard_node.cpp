@@ -13,6 +13,9 @@ tf::TransformListener *tf_listener_ptr;
 tf::TransformBroadcaster* tf_broadcaster_ptr;
 ros::Publisher pose_pub, particles_pub;
 
+std::string map_file, map_frame, odom_frame, robot_frame;
+PFParams pf_params;
+
 geometry_msgs::Pose getGeometryMsgPose(Eigen::Vector3f pos, Eigen::Quaternionf quat) {
     geometry_msgs::Pose pose;
     pose.position.x = pos(0);
@@ -47,8 +50,8 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
 
     try{
         tf::StampedTransform odom_basefootprint_transform, basefootprint_lidar_transform;
-        tf_listener_ptr->lookupTransform("/odom", "/base_footprint", ros::Time(0), odom_basefootprint_transform);
-        tf_listener_ptr->lookupTransform("/base_footprint", cloud_msg->header.frame_id, ros::Time(0), basefootprint_lidar_transform);
+        tf_listener_ptr->lookupTransform(odom_frame, robot_frame, ros::Time(0), odom_basefootprint_transform);
+        tf_listener_ptr->lookupTransform(robot_frame, cloud_msg->header.frame_id, ros::Time(0), basefootprint_lidar_transform);
         PointCloudNormal::Ptr transformed_cloud (new PointCloudNormal ());
         pcl_ros::transformPointCloudWithNormals (*cloud, *transformed_cloud, basefootprint_lidar_transform);
 
@@ -56,7 +59,7 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
         std::vector<Particle> particles = pf_standard.getParticleSet();
    
         geometry_msgs::PoseArray particle_array;
-        particle_array.header.frame_id = "map";
+        particle_array.header.frame_id = map_frame;
         particle_array.header.stamp = ros::Time::now();
         for(size_t i = 0; i < particles.size(); i++)
         {
@@ -71,7 +74,7 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
  
         geometry_msgs::PoseWithCovarianceStamped pose_msg;
         pose_msg.header.stamp = ros::Time::now();
-        pose_msg.header.frame_id = "map";
+        pose_msg.header.frame_id = map_frame;
         pose_msg.pose.pose = getGeometryMsgPose(avg_particle_pos, avg_particle_quat);
         pose_pub.publish(pose_msg);
 
@@ -81,10 +84,35 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
         quaternionMsgToTF(pose_msg.pose.pose.orientation, map_basefootprint_quat);
         map_basefootprint_transform.setRotation(map_basefootprint_quat);
         tf::Transform map_odom_transform = map_basefootprint_transform * odom_basefootprint_transform.inverse();
-        tf_broadcaster_ptr->sendTransform(tf::StampedTransform(map_odom_transform, cloud_msg->header.stamp, "/map", "/odom"));
+        tf_broadcaster_ptr->sendTransform(tf::StampedTransform(map_odom_transform, cloud_msg->header.stamp, map_frame, odom_frame));
     } catch (tf::TransformException ex) {
         ROS_ERROR("%s",ex.what());
     }
+}
+
+void getRosParams(ros::NodeHandle &nh) {
+    nh.param("map_file", map_file, std::string("/home/hk/Files/HBRS/Thesis/catkin_ws_thesis/src/mcl_standard/maps/lego_loam_normals_map.pcd"));
+    nh.param("map_frame", map_frame, std::string("map"));
+    nh.param("odom_frame", odom_frame, std::string("odom"));
+    nh.param("robot_frame", robot_frame, std::string("base_footprint"));
+
+    nh.param("num_particles", pf_params.num_particles, 3);
+    nh.param("init_pose_x", pf_params.init_pose_x, 0.0f);
+    nh.param("init_pose_y", pf_params.init_pose_y, 0.0f);
+    nh.param("init_pose_yaw", pf_params.init_pose_yaw, 0.0f);
+    nh.param("init_trans_var", pf_params.init_trans_var, 0.1f);
+    nh.param("init_rot_var", pf_params.init_rot_var, 0.1f);
+   
+    nh.param("odom_trans_var_per_m", pf_params.odom_trans_var_per_m, 0.1f);         // 10m -> std.dev.=1m
+    nh.param("odom_trans_var_per_rad", pf_params.odom_trans_var_per_rad, 0.002f);   // 360deg -> std.dev.=0.1m
+    nh.param("odom_rot_var_per_rad", pf_params.odom_rot_var_per_rad, 0.1f);         // 360deg -> std.dev.=45deg
+    nh.param("odom_rot_var_per_m", pf_params.odom_rot_var_per_m, 0.06f);            // 10m -> std.dev.=45deg
+ 
+    nh.param("num_observations", pf_params.num_observations, 300);
+    nh.param("obs_std_dev", pf_params.obs_std_dev, 0.02f);
+    nh.param("max_obs_nn_dist", pf_params.max_obs_nn_dist, 0.3f);
+    nh.param("max_obs_nn_ang_diff", pf_params.max_obs_nn_ang_diff, 0.2f);
+    nh.param("outlier_weight", pf_params.outlier_weight, 0.0f);
 }
 
 int main (int argc, char** argv) {
@@ -94,20 +122,14 @@ int main (int argc, char** argv) {
     tf_listener_ptr = new tf::TransformListener();
     tf_broadcaster_ptr = new tf::TransformBroadcaster();
 
-    std::string map_file; 
-    nh.param("map_file", map_file, std::string("/home/hk/Files/HBRS/Thesis/catkin_ws_thesis/src/mcl_standard/maps/lego_loam_normals_map.pcd"));
+    getRosParams(nh);
     PointCloudNormal::Ptr map_cloud (new PointCloudNormal ());
     if (pcl::io::loadPCDFile<PointNormal> (map_file, *map_cloud) == -1) {
         PCL_ERROR ("Couldn't read map file: \n");
         return -1;
     }
     
-    int num_particles;
-    float obs_alpha; 
-    nh.param("num_particles", num_particles, 3);
-    nh.param("obs_alpha", obs_alpha, 0.0f);
-    std::cout << "obs_alpha: " << obs_alpha << std::endl;
-    ParticleFilter pf_standard(num_particles, map_cloud, obs_alpha);
+    ParticleFilter pf_standard(map_cloud, pf_params);
  
     ros::Subscriber init_pose_sub = nh.subscribe<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 1, boost::bind(initPoseCb, _1, boost::ref(pf_standard)));
     ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/odom", 10, boost::bind(odomCb, _1, boost::ref(pf_standard)));    

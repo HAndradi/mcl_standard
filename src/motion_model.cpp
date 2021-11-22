@@ -1,11 +1,14 @@
 #include "motion_model.h"
 
-MotionModel::MotionModel() : last_odom_timestamp_(0), motion_trans_(0,0,0), motion_rot_(1,0,0,0) {
+MotionModel::MotionModel(float trans_var_per_m, float trans_var_per_rad, float rot_var_per_rad, float rot_var_per_m) {
+    last_odom_timestamp_ = 0; 
+    motion_trans_ = Eigen::Vector3f(0,0,0);
+    motion_rot_ = Eigen::Quaternionf(1,0,0,0);
     robot_frame_motion_noise_cov_ = Eigen::Vector3f(1e-6, 1e-6, 1e-6).asDiagonal();
-    trans_var_per_m_ = 0.1;   // 10m -> std.dev.=1m
-    trans_var_per_rad_ = 0.002; // 360deg -> std.dev.=0.1m
-    rot_var_per_rad_ = 0.1;   // 360deg -> std.dev.=45deg
-    rot_var_per_m_ = 0.06;    // 10m -> std.dev.=45deg
+    trans_var_per_m_ = trans_var_per_m; 
+    trans_var_per_rad_ = trans_var_per_rad;
+    rot_var_per_rad_ = rot_var_per_rad;
+    rot_var_per_m_ = rot_var_per_m;
 }
 
 void MotionModel::setNewOdom(uint64_t new_odom_timestamp, Eigen::Vector3f new_odom_pos, Eigen::Quaternionf new_odom_quat) {

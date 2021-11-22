@@ -22,15 +22,20 @@ Eigen::Vector3f sampleZeroMean3DGaussian(Eigen::Matrix3f cov, std::default_rando
     return sample; 
 }
 
-ParticleFilter::ParticleFilter(int num_particles, PointCloudNormal::Ptr map_cloud, float obs_alpha) {
-    num_particles_ = num_particles;
-    motion_model_ = new MotionModel(); 
-    observation_model_ = new ObservationModel(map_cloud, 300, 0.02, 0.3, 0.2, obs_alpha); 
-    initializeParticles(Eigen::Vector3f(0, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
+ParticleFilter::ParticleFilter(PointCloudNormal::Ptr map_cloud, PFParams params) {
+    num_particles_ = params.num_particles;
+    init_trans_var_ = params.init_trans_var;
+    init_rot_var_ = params.init_rot_var;
+    motion_model_ = new MotionModel(params.odom_trans_var_per_m, params.odom_trans_var_per_rad
+                                    , params.odom_rot_var_per_rad, params.odom_rot_var_per_m); 
+    observation_model_ = new ObservationModel(map_cloud, params.num_observations, params.obs_std_dev, params.max_obs_nn_dist
+                                              , params.max_obs_nn_ang_diff, params.outlier_weight);
+    initializeParticles(Eigen::Vector3f(params.init_pose_x, params.init_pose_y, 0)
+                        , Eigen::Quaternionf(Eigen::AngleAxisf(params.init_pose_yaw, Eigen::Vector3f::UnitZ())));
 }
 
 void ParticleFilter::initializeParticles(Eigen::Vector3f init_pos, Eigen::Quaternionf init_quat) {
-    Eigen::Matrix3f init_pose_cov = Eigen::Vector3f(0.1, 0.1, 0.1).asDiagonal();
+    Eigen::Matrix3f init_pose_cov = Eigen::Vector3f(init_trans_var_, init_trans_var_, init_rot_var_).asDiagonal();
     particles_.clear();
     for (size_t i = 0; i < num_particles_; i++) {
         Eigen::Vector3f init_pose_noise = sampleZeroMean3DGaussian(init_pose_cov, generator_);

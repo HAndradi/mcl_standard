@@ -6,7 +6,7 @@
 
 class MotionModel {
     public:
-        MotionModel();
+        MotionModel(float trans_var_per_m, float trans_var_per_rad, float rot_var_per_rad, float rot_var_per_m);
         void setNewOdom(uint64_t new_odom_timestamp, Eigen::Vector3f new_odom_pos, Eigen::Quaternionf new_odom_quat);
         void resetAccumulatedMotion();
         Eigen::Vector3f getTranslation();
