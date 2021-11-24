@@ -42,7 +42,7 @@ void ParticleFilter::initializeParticles(Eigen::Vector3f init_pos, Eigen::Quater
         Eigen::Vector3f init_pos_noise(init_pose_noise(0), init_pose_noise(1), 0);
         Eigen::Quaternionf init_quat_noise(Eigen::AngleAxisf(init_pose_noise(2), Eigen::Vector3f::UnitZ()));
          
-        Eigen::Vector3f particle_pos = init_pos + init_quat * init_pose_noise;
+        Eigen::Vector3f particle_pos = init_pos + init_quat * init_pos_noise;
         Eigen::Quaternionf particle_quat = init_quat * init_quat_noise;
         particles_.push_back(Particle(particle_pos, particle_quat, 1.0/num_particles_)); 
     }
