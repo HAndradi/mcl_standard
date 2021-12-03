@@ -73,7 +73,7 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
         Eigen::Quaternionf avg_particle_quat = pf_standard.getAverageQuat();
  
         geometry_msgs::PoseWithCovarianceStamped pose_msg;
-        pose_msg.header.stamp = ros::Time::now();
+        pose_msg.header.stamp = cloud_msg->header.stamp; //ros::Time::now();
         pose_msg.header.frame_id = map_frame;
         pose_msg.pose.pose = getGeometryMsgPose(avg_particle_pos, avg_particle_quat);
         robot_pose_pub.publish(pose_msg);
