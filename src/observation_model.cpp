@@ -5,7 +5,7 @@
 #include <algorithm>
 
 ObservationModel::ObservationModel(PointCloudNormal::Ptr map_cloud, int num_observations, float observation_std_dev, float max_nn_dist
-                                   , float max_nn_normal_ang_diff, float obs_alpha): map_octree_(0.03) {
+                                   , float max_nn_normal_ang_diff, float obs_alpha): map_octree_(0.1) {
     num_observations_ = num_observations;
     observation_std_dev_ = observation_std_dev;
     max_nn_sqr_dist_ = pow(max_nn_dist,2);
