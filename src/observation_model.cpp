@@ -29,6 +29,7 @@ void ObservationModel::setInputCloud(PointCloudNormal::Ptr cloud) {
     } else {
         std::cout << "Insufficient number of scan points" << std::endl;
     }
+    *cloud = *input_cloud_;
 }
 
 float ObservationModel::getLogLikelihood(Particle &particle) {
