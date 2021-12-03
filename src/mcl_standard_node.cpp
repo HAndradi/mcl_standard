@@ -11,7 +11,7 @@
 
 tf::TransformListener *tf_listener_ptr;
 tf::TransformBroadcaster* tf_broadcaster_ptr;
-ros::Publisher pose_pub, particles_pub;
+ros::Publisher robot_pose_pub, particles_pub, map_frame_downsampled_cloud_pub;
 
 std::string map_file, map_frame, odom_frame, robot_frame;
 PFParams pf_params;
@@ -49,13 +49,13 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
     pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
 
     try{
-        tf::StampedTransform odom_basefootprint_transform, basefootprint_lidar_transform;
-        tf_listener_ptr->lookupTransform(odom_frame, robot_frame, ros::Time(0), odom_basefootprint_transform);
-        tf_listener_ptr->lookupTransform(robot_frame, cloud_msg->header.frame_id, ros::Time(0), basefootprint_lidar_transform);
-        PointCloudNormal::Ptr transformed_cloud (new PointCloudNormal ());
-        pcl_ros::transformPointCloudWithNormals (*cloud, *transformed_cloud, basefootprint_lidar_transform);
+        tf::StampedTransform odom_basefootprint_tf, basefootprint_lidar_tf;
+        tf_listener_ptr->lookupTransform(odom_frame, robot_frame, ros::Time(0), odom_basefootprint_tf);
+        tf_listener_ptr->lookupTransform(robot_frame, cloud_msg->header.frame_id, ros::Time(0), basefootprint_lidar_tf);
+        PointCloudNormal::Ptr basefootprint_frame_cloud (new PointCloudNormal ());
+        pcl_ros::transformPointCloudWithNormals (*cloud, *basefootprint_frame_cloud, basefootprint_lidar_tf);
 
-        pf_standard.filter(transformed_cloud);
+        pf_standard.filter(basefootprint_frame_cloud);
         std::vector<Particle> particles = pf_standard.getParticleSet();
    
         geometry_msgs::PoseArray particle_array;
@@ -76,15 +76,25 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
         pose_msg.header.stamp = ros::Time::now();
         pose_msg.header.frame_id = map_frame;
         pose_msg.pose.pose = getGeometryMsgPose(avg_particle_pos, avg_particle_quat);
-        pose_pub.publish(pose_msg);
+        robot_pose_pub.publish(pose_msg);
 
-        tf::Transform map_basefootprint_transform;
-        map_basefootprint_transform.setOrigin(tf::Vector3(avg_particle_pos(0), avg_particle_pos(1), 0.0));
+        tf::Transform map_basefootprint_tf;
+        map_basefootprint_tf.setOrigin(tf::Vector3(avg_particle_pos(0), avg_particle_pos(1), 0.0));
         tf::Quaternion map_basefootprint_quat;
         quaternionMsgToTF(pose_msg.pose.pose.orientation, map_basefootprint_quat);
-        map_basefootprint_transform.setRotation(map_basefootprint_quat);
-        tf::Transform map_odom_transform = map_basefootprint_transform * odom_basefootprint_transform.inverse();
+        map_basefootprint_tf.setRotation(map_basefootprint_quat);
+        tf::Transform map_odom_transform = map_basefootprint_tf * odom_basefootprint_tf.inverse();
         tf_broadcaster_ptr->sendTransform(tf::StampedTransform(map_odom_transform, cloud_msg->header.stamp, map_frame, odom_frame));
+
+        Eigen::Affine3f map_basefootprint_transform = Eigen::Affine3f::Identity() * avg_particle_quat;
+        map_basefootprint_transform.translation() =  avg_particle_pos;
+        PointCloudNormal::Ptr map_frame_downsampled_cloud (new PointCloudNormal ());
+        pcl::transformPointCloudWithNormals (*basefootprint_frame_cloud, *map_frame_downsampled_cloud, map_basefootprint_transform);
+        sensor_msgs::PointCloud2 output_cloud;
+        pcl::toROSMsg(*map_frame_downsampled_cloud, output_cloud);
+        output_cloud.header.frame_id = map_frame;
+        output_cloud.header.stamp = ros::Time::now();
+        map_frame_downsampled_cloud_pub.publish(output_cloud);
     } catch (tf::TransformException ex) {
         ROS_ERROR("%s",ex.what());
     }
@@ -134,9 +144,10 @@ int main (int argc, char** argv) {
     ros::Subscriber init_pose_sub = nh.subscribe<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 1, boost::bind(initPoseCb, _1, boost::ref(pf_standard)));
     ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/odom", 10, boost::bind(odomCb, _1, boost::ref(pf_standard)));    
     ros::Subscriber cloud_sub = nh.subscribe<sensor_msgs::PointCloud2> ("/lidar_point_normals", 1, boost::bind(cloudCb, _1, boost::ref(pf_standard)));
-    pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped> ("/robot_pose", 1, true); 
+    robot_pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped> ("/robot_pose", 1, true); 
     particles_pub = nh.advertise<geometry_msgs::PoseArray> ("particles", 1, true);
-   
+    map_frame_downsampled_cloud_pub = nh.advertise<sensor_msgs::PointCloud2> ("/map_frame_downsampled_cloud", 1);  
+ 
     ros::spin ();
 }
 
