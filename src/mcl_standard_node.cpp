@@ -110,7 +110,8 @@ void getRosParams(ros::NodeHandle &nh) {
     nh.param("init_pose_x", pf_params.init_pose_x, 0.0f);
     nh.param("init_pose_y", pf_params.init_pose_y, 0.0f);
     nh.param("init_pose_yaw", pf_params.init_pose_yaw, 0.0f);
-    nh.param("init_trans_var", pf_params.init_trans_var, 0.1f);
+    nh.param("init_trans_var_x", pf_params.init_trans_var_x, 0.1f);
+    nh.param("init_trans_var_y", pf_params.init_trans_var_y, 0.1f);
     nh.param("init_rot_var", pf_params.init_rot_var, 0.1f);
    
     nh.param("odom_trans_var_per_m", pf_params.odom_trans_var_per_m, 0.1f);         // 10m -> std.dev.=1m

@@ -7,7 +7,7 @@
 
 struct PFParams{
     int num_particles;
-    float init_pose_x, init_pose_y, init_pose_yaw, init_rot_var, init_trans_var;
+    float init_pose_x, init_pose_y, init_pose_yaw, init_rot_var, init_trans_var_x, init_trans_var_y;
     float odom_trans_var_per_m, odom_trans_var_per_rad, odom_rot_var_per_rad, odom_rot_var_per_m;
     int num_observations;
     float obs_std_dev, max_obs_nn_dist, max_obs_nn_ang_diff, outlier_weight;
@@ -26,7 +26,7 @@ class ParticleFilter {
         MotionModel *motion_model_;
         ObservationModel *observation_model_;
         int num_particles_;
-        float init_rot_var_, init_trans_var_;
+        float init_rot_var_, init_trans_var_x_, init_trans_var_y_;
         std::vector<Particle> particles_;
         std::default_random_engine generator_;
 };

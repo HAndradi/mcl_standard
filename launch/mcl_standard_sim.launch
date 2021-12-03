@@ -25,7 +25,8 @@
         <param name="num_particles" value="$(arg num_particles)" />
         <param name="obs_std_dev" value="$(arg obs_std_dev)" />
         <param name="outlier_weight" value="$(arg outlier_weight)" />
-        <param name="init_trans_var" value="0.1" />
+        <param name="init_trans_var_x" value="0.1" />
+        <param name="init_trans_var_y" value="0.1" />
         <param name="init_rot_var" value="0" />
         <!--
         <param name="odom_trans_var_per_m" value="1" />
