@@ -60,7 +60,7 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
    
         geometry_msgs::PoseArray particle_array;
         particle_array.header.frame_id = map_frame;
-        particle_array.header.stamp = ros::Time::now();
+        particle_array.header.stamp = cloud_msg->header.stamp; //ros::Time::now();
         for(size_t i = 0; i < particles.size(); i++)
         {
             Eigen::Vector3f particle_pos = particles[i].getPos();
@@ -146,7 +146,7 @@ int main (int argc, char** argv) {
     ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/odom", 10, boost::bind(odomCb, _1, boost::ref(pf_standard)));    
     ros::Subscriber cloud_sub = nh.subscribe<sensor_msgs::PointCloud2> ("/lidar_point_normals", 1, boost::bind(cloudCb, _1, boost::ref(pf_standard)));
     robot_pose_pub = nh.advertise<geometry_msgs::PoseWithCovarianceStamped> ("/robot_pose", 1, true); 
-    particles_pub = nh.advertise<geometry_msgs::PoseArray> ("particles", 1, true);
+    particles_pub = nh.advertise<geometry_msgs::PoseArray> ("/mcl_particles", 1, true);
     map_frame_downsampled_cloud_pub = nh.advertise<sensor_msgs::PointCloud2> ("/map_frame_downsampled_cloud", 1);  
  
     ros::spin ();

@@ -12,7 +12,7 @@ Panels:
         - /PointCloud22
         - /Odometry1/Shape1
       Splitter Ratio: 0.5
-    Tree Height: 437
+    Tree Height: 609
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -31,7 +31,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -60,29 +60,13 @@ Visualization Manager:
       Frame Timeout: 1
       Frames:
         All Enabled: false
-        base_footprint:
-          Value: true
-        ground_truth_pose:
-          Value: false
-        map:
-          Value: false
-        odom:
-          Value: false
-        rslidar:
-          Value: false
       Marker Scale: 3
       Name: TF
       Show Arrows: false
       Show Axes: true
       Show Names: false
       Tree:
-        map:
-          ground_truth_pose:
-            {}
-          odom:
-            base_footprint:
-              rslidar:
-                {}
+        {}
       Update Interval: 0
       Value: true
     - Class: rviz/Axes
@@ -165,7 +149,7 @@ Visualization Manager:
       Shaft Length: 0.230000004
       Shaft Radius: 0.00999999978
       Shape: Arrow (Flat)
-      Topic: /mcl_standard_node/particles
+      Topic: /mcl_particles
       Unreliable: false
       Value: true
     - Alpha: 1
