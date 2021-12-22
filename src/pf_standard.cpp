@@ -90,9 +90,9 @@ void ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
     std::vector<float> cummulative_weights{particles_[0].getWeight()};
     for (size_t i=1; i < particles_.size()-1; i++) {
         cummulative_weights.push_back(cummulative_weights.back() + particles_[i].getWeight());
-        std::cout << cummulative_weights[i] << " , ";
+        //std::cout << cummulative_weights[i] << " , ";
     }
-    std::cout << 1.0 << std::endl;
+    //std::cout << 1.0 << std::endl;
     cummulative_weights.push_back(1.0);
 
     std::vector<Particle> new_particles;
