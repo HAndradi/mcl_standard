@@ -2,11 +2,15 @@
 <launch>
     <arg name="offline" default="true" />
 
-    <arg name="map" value="single_room"/>
+    <arg name="map" value="$(optenv MAP corridor)"/>
     <arg name="map_file" default="$(find mcl_standard)/maps/$(arg map).pcd"/>
     <arg name="num_particles" default="3" />
     <arg name="outlier_weight" default="0.0" />
     <arg name="obs_std_dev" default="0.02" />
+    <arg name="odom_trans_var_per_m" default="0.1" />
+    <arg name="bag_file" default="~Desktop/bagfile.bag"/>
+    <arg name="playback_speed" default="1" />
+
     
     <arg name="rviz" default="false"/>
     
@@ -22,7 +26,10 @@
         <remap from="cloud_pcd" to="mapcloud" />
     </node>
 
+    <!--
     <node pkg="mcl_standard" type="mcl_standard_node"    name="mcl_standard_node"    output="screen">
+    -->
+    <node pkg="mcl_standard" type="mcl_standard_node"    name="mcl_standard_node">
         <param name="map_file" value="$(arg map_file)" />
         <param name="num_particles" value="$(arg num_particles)" />
         <param name="obs_std_dev" value="$(arg obs_std_dev)" />
@@ -30,6 +37,7 @@
         <param name="init_trans_var_x" value="0" />
         <param name="init_trans_var_y" value="0" />
         <param name="init_rot_var" value="0" />
+        <param name="odom_trans_var_per_m" value="$(arg odom_trans_var_per_m)" />
         <!--
         <param name="odom_trans_var_per_m" value="1" />
         -->
@@ -43,5 +51,7 @@
         <param name="max_pt_to_normal_ang" value="1.3" />
     </node>
 
-    <node pkg="localization_evaluation" type="simulation_robustness_evaluator_node" name="simulation_robustness_evaluator_node" output="screen"/>
+    <node pkg="localization_evaluation" type="simulation_robustness_evaluator_node" name="simulation_robustness_evaluator_node" output="screen" args="std $(arg num_particles) $(arg obs_std_dev)"/>
+
+    <node pkg="rosbag" type="play" name="rosbag_node" args="--clock $(arg bag_file) -r $(arg playback_speed)" />
 </launch>
