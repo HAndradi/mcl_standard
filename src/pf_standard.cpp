@@ -49,6 +49,39 @@ void ParticleFilter::initializeParticles(Eigen::Vector3f init_pos, Eigen::Quater
     }
 }
 
+//void ParticleFilter::initializeParticles(Eigen::Vector3f init_pos, Eigen::Quaternionf init_quat) {
+//    Eigen::Matrix3f init_pose_cov = Eigen::Vector3f(init_trans_var_x_, init_trans_var_y_, init_rot_var_).asDiagonal();
+//    particles_.clear();
+//    for (size_t i = 0; i < num_particles_/3; i++) {
+//        Eigen::Vector3f init_pose_noise = sampleZeroMean3DGaussian(init_pose_cov, generator_);
+//        Eigen::Vector3f init_pos_noise(init_pose_noise(0), init_pose_noise(1), 0);
+//        Eigen::Quaternionf init_quat_noise(Eigen::AngleAxisf(init_pose_noise(2), Eigen::Vector3f::UnitZ()));
+//         
+//        Eigen::Vector3f particle_pos = init_pos + Eigen::Vector3f(0,0,0) + init_quat * init_pos_noise;
+//        Eigen::Quaternionf particle_quat = init_quat * init_quat_noise;
+//        particles_.push_back(Particle(particle_pos, particle_quat, 1.0/num_particles_)); 
+//    }
+//    for (size_t i = 0; i < num_particles_/3; i++) {
+//        Eigen::Vector3f init_pose_noise = sampleZeroMean3DGaussian(init_pose_cov, generator_);
+//        Eigen::Vector3f init_pos_noise(init_pose_noise(0), init_pose_noise(1), 0);
+//        Eigen::Quaternionf init_quat_noise(Eigen::AngleAxisf(init_pose_noise(2), Eigen::Vector3f::UnitZ()));
+//         
+//        Eigen::Vector3f particle_pos = init_pos + Eigen::Vector3f(-11,0,0) + init_quat * init_pos_noise;
+//        Eigen::Quaternionf particle_quat = init_quat * init_quat_noise;
+//        particles_.push_back(Particle(particle_pos, particle_quat, 1.0/num_particles_)); 
+//    }
+//    int num_particles_last_room = num_particles_ - particles_.size();
+//    for (size_t i = 0; i < num_particles_last_room; i++) {
+//        Eigen::Vector3f init_pose_noise = sampleZeroMean3DGaussian(init_pose_cov, generator_);
+//        Eigen::Vector3f init_pos_noise(init_pose_noise(0), init_pose_noise(1), 0);
+//        Eigen::Quaternionf init_quat_noise(Eigen::AngleAxisf(init_pose_noise(2), Eigen::Vector3f::UnitZ()));
+//         
+//        Eigen::Vector3f particle_pos = init_pos + Eigen::Vector3f(-22,0,0) + init_quat * init_pos_noise;
+//        Eigen::Quaternionf particle_quat = init_quat * init_quat_noise;
+//        particles_.push_back(Particle(particle_pos, particle_quat, 1.0/num_particles_)); 
+//    }
+//}
+
 void ParticleFilter::setNewOdom(uint64_t new_odom_timestamp, Eigen::Vector3f new_odom_pos, Eigen::Quaternionf new_odom_quat) {
     motion_model_->setNewOdom(new_odom_timestamp, new_odom_pos, new_odom_quat);
 }
