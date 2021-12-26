@@ -4,6 +4,7 @@
 #include <limits>
 #include <algorithm>
 #include <stdlib.h>
+#include <chrono>
 
 using Gaussian = std::normal_distribution<float>;
 
@@ -33,6 +34,7 @@ ParticleFilter::ParticleFilter(PointCloudNormal::Ptr map_cloud, PFParams params)
                                               , params.max_obs_nn_ang_diff, params.outlier_weight);
     initializeParticles(Eigen::Vector3f(params.init_pose_x, params.init_pose_y, 0)
                         , Eigen::Quaternionf(Eigen::AngleAxisf(params.init_pose_yaw, Eigen::Vector3f::UnitZ())));
+    generator_.seed(std::time(0));
 }
 
 void ParticleFilter::initializeParticles(Eigen::Vector3f init_pos, Eigen::Quaternionf init_quat) {
@@ -76,7 +78,7 @@ void ParticleFilter::initializeParticles(Eigen::Vector3f init_pos, Eigen::Quater
 //        Eigen::Vector3f init_pos_noise(init_pose_noise(0), init_pose_noise(1), 0);
 //        Eigen::Quaternionf init_quat_noise(Eigen::AngleAxisf(init_pose_noise(2), Eigen::Vector3f::UnitZ()));
 //         
-//        Eigen::Vector3f particle_pos = init_pos + Eigen::Vector3f(-22,0,0) + init_quat * init_pos_noise;
+//        Eigen::Vector3f particle_pos = init_pos + Eigen::Vector3f(11,0,0) + init_quat * init_pos_noise;
 //        Eigen::Quaternionf particle_quat = init_quat * init_quat_noise;
 //        particles_.push_back(Particle(particle_pos, particle_quat, 1.0/num_particles_)); 
 //    }
