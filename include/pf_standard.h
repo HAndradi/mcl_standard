@@ -18,7 +18,7 @@ class ParticleFilter {
         ParticleFilter(PointCloudNormal::Ptr map_cloud, PFParams params);
         void initializeParticles(Eigen::Vector3f init_pos, Eigen::Quaternionf init_quat);
         void setNewOdom(uint64_t new_odom_timestamp, Eigen::Vector3f new_odom_pos, Eigen::Quaternionf new_odom_quat);
-        void filter(PointCloudNormal::Ptr cloud);
+        int filter(PointCloudNormal::Ptr cloud);
         std::vector<Particle> getParticleSet();
         Eigen::Vector3f getAveragePos();
         Eigen::Quaternionf getAverageQuat();

@@ -8,6 +8,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <pcl_ros/transforms.h>
+#include <fstream>
 
 tf::TransformListener *tf_listener_ptr;
 tf::TransformBroadcaster* tf_broadcaster_ptr;
@@ -15,6 +16,8 @@ ros::Publisher robot_pose_pub, particles_pub, map_frame_downsampled_cloud_pub;
 
 std::string map_file, map_frame, odom_frame, robot_frame;
 PFParams pf_params;
+
+std::vector<int> t_execution_vec;
 
 geometry_msgs::Pose getGeometryMsgPose(Eigen::Vector3f pos, Eigen::Quaternionf quat) {
     geometry_msgs::Pose pose;
@@ -55,9 +58,10 @@ void cloudCb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg, ParticleFilter 
         PointCloudNormal::Ptr basefootprint_frame_cloud (new PointCloudNormal ());
         pcl_ros::transformPointCloudWithNormals (*cloud, *basefootprint_frame_cloud, basefootprint_lidar_tf);
 
-        pf_standard.filter(basefootprint_frame_cloud);
-        std::vector<Particle> particles = pf_standard.getParticleSet();
+        int t_execution = pf_standard.filter(basefootprint_frame_cloud);
+        t_execution_vec.push_back(t_execution);
    
+        std::vector<Particle> particles = pf_standard.getParticleSet();
         geometry_msgs::PoseArray particle_array;
         particle_array.header.frame_id = map_frame;
         particle_array.header.stamp = cloud_msg->header.stamp; //ros::Time::now();
@@ -150,5 +154,12 @@ int main (int argc, char** argv) {
     map_frame_downsampled_cloud_pub = nh.advertise<sensor_msgs::PointCloud2> ("/map_frame_downsampled_cloud", 1);  
  
     ros::spin ();
+   
+    std::ofstream file("/tmp/mcl_std_execution_time.txt"); 
+    for (size_t i=0; i < t_execution_vec.size(); i++){
+        int t_execution_per_particle = t_execution_vec[i] / pf_params.num_particles;
+        file << t_execution_per_particle << std::endl;
+    }
+    file.close();
 }
 

@@ -88,7 +88,7 @@ void ParticleFilter::setNewOdom(uint64_t new_odom_timestamp, Eigen::Vector3f new
     motion_model_->setNewOdom(new_odom_timestamp, new_odom_pos, new_odom_quat);
 }
 
-void ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
+int ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
     Eigen::Vector3f motion_trans = motion_model_->getTranslation();
     Eigen::Quaternionf motion_rot = motion_model_->getRotation();
     Eigen::Matrix3f motion_noise_cov = motion_model_->getAccumulatedMotionNoiseCovariance();
@@ -96,6 +96,7 @@ void ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
 
     observation_model_->setInputCloud(cloud);
     std::vector<float> particle_log_likelihoods(num_particles_);
+    auto t_start = std::chrono::high_resolution_clock::now();
     for (size_t i=0; i < num_particles_; i++){
         particles_[i].updateState(motion_trans, motion_rot);
         Eigen::Vector3f motion_noise_sample = sampleZeroMean3DGaussian(motion_noise_cov, generator_);
@@ -105,6 +106,8 @@ void ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
 
         particle_log_likelihoods[i] = observation_model_->getLogLikelihood(particles_[i]);
     }
+    auto t_stop = std::chrono::high_resolution_clock::now();
+    auto t_execution = std::chrono::duration_cast<std::chrono::microseconds>(t_stop - t_start);
 
     //////////////////////////// SET WEIGHTS ////////////////////////////////////////
 
@@ -144,6 +147,7 @@ void ParticleFilter::filter(PointCloudNormal::Ptr cloud) {
         random_prob += 1.0/num_particles_;
     }  
     particles_ = new_particles; 
+    return t_execution.count();
 }
 
 std::vector<Particle> ParticleFilter::getParticleSet() {

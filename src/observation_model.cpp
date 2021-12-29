@@ -55,8 +55,8 @@ float ObservationModel::getLogLikelihood(Particle &particle) {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         nn_sqr_dist_sum += nn_sqr_dist_capped;
     }
-    float log_likelihood = num_observations * log(1/(observation_std_dev_*sqrt(2*M_PI))) - 0.5 * nn_sqr_dist_sum / pow(observation_std_dev_,2);
     return log_likelihood_sum;
+    //float log_likelihood = num_observations * log(1/(observation_std_dev_*sqrt(2*M_PI))) - 0.5 * nn_sqr_dist_sum / pow(observation_std_dev_,2);
     //return log_likelihood;
 }
 
